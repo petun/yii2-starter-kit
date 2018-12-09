@@ -183,7 +183,25 @@ if (YII_ENV_PROD) {
 if (YII_ENV_DEV) {
     $config['bootstrap'][] = 'gii';
     $config['modules']['gii'] = [
-        'class' => yii\gii\Module::class
+        'class' => yii\gii\Module::class,
+        'generators' => [
+            'crud' => [
+                'class' => yii\gii\generators\crud\Generator::class,
+                'templates' => [
+                    'yii2-starter-kit' => Yii::getAlias('@backend/views/_gii/templates'),
+                ],
+                'template' => 'yii2-starter-kit',
+                'messageCategory' => 'backend',
+            ],
+            'model' => [
+                'class' => \yii\gii\generators\model\Generator::class,
+                'templates' => [
+                    'app-active-record' => Yii::getAlias('@backend/views/_gii/templates'),
+                ],
+                'baseClass' => \common\models\BaseAppActiveRecord::class,
+                'template' => 'app-active-record',
+            ],
+        ],
     ];
 
     $config['components']['cache'] = [

@@ -37,7 +37,6 @@ use <?php echo ltrim($generator->searchModelClass, '\\') . (isset($searchModelAl
 use yii\data\ActiveDataProvider;
 <?php endif; ?>
 use <?php echo ltrim($generator->baseControllerClass, '\\') ?>;
-use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
 /**
@@ -45,6 +44,8 @@ use yii\filters\VerbFilter;
  */
 class <?php echo $controllerClass ?> extends <?php echo StringHelper::basename($generator->baseControllerClass) . "\n" ?>
 {
+
+    use \common\traits\FindModelTrait;
 
     /** @inheritdoc */
     public function behaviors()
@@ -92,7 +93,7 @@ class <?php echo $controllerClass ?> extends <?php echo StringHelper::basename($
     public function actionView(<?php echo $actionParams ?>)
     {
         return $this->render('view', [
-            'model' => $this->findModel(<?php echo $actionParams ?>),
+            'model' => $this->findModel(<?php echo $modelClass ?>::class, <?php echo $actionParams ?>),
         ]);
     }
 
@@ -121,7 +122,7 @@ class <?php echo $controllerClass ?> extends <?php echo StringHelper::basename($
      */
     public function actionUpdate(<?php echo $actionParams ?>)
     {
-        $model = $this->findModel(<?php echo $actionParams ?>);
+        $model = $this->findModel(<?php echo $modelClass ?>::class, <?php echo $actionParams ?>);
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
             return $this->redirect(['view', <?php echo $urlParams ?>]);
@@ -139,34 +140,9 @@ class <?php echo $controllerClass ?> extends <?php echo StringHelper::basename($
      */
     public function actionDelete(<?php echo $actionParams ?>)
     {
-        $this->findModel(<?php echo $actionParams ?>)->delete();
+        $this->findModel(<?php echo $modelClass ?>::class, <?php echo $actionParams ?>)->delete();
 
         return $this->redirect(['index']);
     }
 
-    /**
-     * Finds the <?php echo $modelClass ?> model based on its primary key value.
-     * If the model is not found, a 404 HTTP exception will be thrown.
-     * <?php echo implode("\n     * ", $actionParamComments) . "\n" ?>
-     * @return <?php echo                   $modelClass ?> the loaded model
-     * @throws NotFoundHttpException if the model cannot be found
-     */
-    protected function findModel(<?php echo $actionParams ?>)
-    {
-<?php
-if (count($pks) === 1) {
-    $condition = '$id';
-} else {
-    $condition = [];
-    foreach ($pks as $pk) {
-        $condition[] = "'$pk' => \$$pk";
-    }
-    $condition = '[' . implode(', ', $condition) . ']';
-}
-?>
-        if (($model = <?php echo $modelClass ?>::findOne(<?php echo $condition ?>)) !== null) {
-            return $model;
-        }
-        throw new NotFoundHttpException('The requested page does not exist.');
-    }
 }
